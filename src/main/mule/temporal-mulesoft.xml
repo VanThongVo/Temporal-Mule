@@ -13,7 +13,7 @@ http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/
 		<http:listener-connection host="0.0.0.0" port="8081" />
 	</http:listener-config>
 	<file:config name="File_Config" doc:name="File Config" doc:id="43ce741d-1ed7-456d-a0da-44df94c90782" >
-		<file:connection workingDir="${app.home}\src\main\resources" />
+		<file:connection workingDir="${mule.home}/apps/${app.name}/" />
 	</file:config>
 	<flow name="invoiceFlow" doc:id="730f5d6f-c8e9-4903-be69-f3f8f872974d" >
 		<http:listener doc:name="Listener" doc:id="78f9eb98-8b62-4807-961a-13e4e978fdfe" config-ref="HTTP_Listener_config" path="/invoice"/>
