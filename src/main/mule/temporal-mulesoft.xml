@@ -13,13 +13,7 @@ http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/
 		<http:listener-connection host="0.0.0.0" port="8081" />
 	</http:listener-config>
 	<file:config name="File_Config" doc:name="File Config" doc:id="43ce741d-1ed7-456d-a0da-44df94c90782" >
-		<file:connection workingDir="D:\VTL_2024\DataWeave\temporal-mulesoft\src\main\resources\invoice" />
-	</file:config>
-	<file:config name="CreditMemo_File_Config" doc:name="File Config" doc:id="3c9bad6e-e083-4653-b847-bb14518f06ff" >
-		<file:connection workingDir="D:\VTL_2024\DataWeave\temporal-mulesoft\src\main\resources\creditMemo" />
-	</file:config>
-	<file:config name="Refund_File_Config" doc:name="File Config" doc:id="cd9c39f3-4318-4c53-afca-95df2fc8d711" >
-		<file:connection workingDir="D:\VTL_2024\DataWeave\temporal-mulesoft\src\main\resources\refund" />
+		<file:connection workingDir="${app.home}\src\main\resources" />
 	</file:config>
 	<flow name="invoiceFlow" doc:id="730f5d6f-c8e9-4903-be69-f3f8f872974d" >
 		<http:listener doc:name="Listener" doc:id="78f9eb98-8b62-4807-961a-13e4e978fdfe" config-ref="HTTP_Listener_config" path="/invoice"/>
@@ -51,10 +45,12 @@ output application/json
 }]]></ee:set-payload>
 				</ee:message>
 			</ee:transform>
-			<file:write doc:name="Write json file into invoice folder" doc:id="913e8e7c-6e01-4182-b41f-b13ab63367b4" config-ref="File_Config" path='#[payload.response.name ++" - " ++ payload.response.internalId ++ ".json"]' mode="CREATE_NEW">
+			<file:write doc:name="Write json file into invoice folder" doc:id="913e8e7c-6e01-4182-b41f-b13ab63367b4" config-ref="File_Config" path="#['invoice/'++ payload.response.name ++&quot; - &quot; ++ payload.response.internalId ++ &quot;.json&quot;]" mode="CREATE_NEW">
 		</file:write>
 		</foreach>
-	</flow>
+		<set-payload value="#[payload.response]" doc:name="Set Payload" doc:id="a2b360cb-3d6e-4741-9ffc-e22bd7f191f4" />
+	
+</flow>
 	<flow name="creditMemoFlow" doc:id="227a76ca-9376-4469-899c-4e56e948b225" >
 		<http:listener doc:name="Listener" doc:id="62261062-fd50-4f6d-a948-2811770ddb74" config-ref="HTTP_Listener_config" path="/creditMemo" />
 		<ee:transform doc:name="append internalId" doc:id="daa5f98d-e294-4c35-93ce-d70465e7a791">
@@ -84,9 +80,10 @@ output application/json
 }]]></ee:set-payload>
 				</ee:message>
 			</ee:transform>
-			<file:write doc:name="Write json file into creditMemo folder" doc:id="00da87ff-0fa4-46d2-a610-d9fef2b8ad4b" config-ref="CreditMemo_File_Config" path='#[payload.response.name ++" - " ++ payload.response.internalId ++ ".json"]' mode="CREATE_NEW">
+			<file:write doc:name="Write json file into creditMemo folder" doc:id="00da87ff-0fa4-46d2-a610-d9fef2b8ad4b" path="#['creditMemo/'++ payload.response.name ++&quot; - &quot; ++ payload.response.internalId ++ &quot;.json&quot;]" mode="CREATE_NEW" config-ref="File_Config">
 		</file:write>
 		</foreach>
+		<set-payload value="#[payload.response]" doc:name="Set Payload" doc:id="ce05eb4b-e979-4755-92db-3fc75d55f497" />
 	
 </flow>
 	<flow name="refundFlow" doc:id="f8f93425-ebfb-4134-9c3c-ad6998eef502" >
@@ -118,9 +115,10 @@ output application/json
 }]]></ee:set-payload>
 				</ee:message>
 			</ee:transform>
-			<file:write doc:name="Write json file into refund folder" doc:id="498c91cc-76e3-493e-abfd-5b72e5d77f56" config-ref="Refund_File_Config" path='#[payload.response.name ++" - " ++ payload.response.internalId ++ ".json"]' mode="CREATE_NEW">
+			<file:write doc:name="Write json file into refund folder" doc:id="498c91cc-76e3-493e-abfd-5b72e5d77f56" config-ref="File_Config" path="#['refund/'++ payload.response.name ++&quot; - &quot; ++ payload.response.internalId ++ &quot;.json&quot;]" mode="CREATE_NEW">
 		</file:write>
 		</foreach>
+		<set-payload value="#[payload.response]" doc:name="Set Payload" doc:id="0cad5994-28df-47aa-bf7d-f55d288cef15" />
 	
 </flow>
 	
