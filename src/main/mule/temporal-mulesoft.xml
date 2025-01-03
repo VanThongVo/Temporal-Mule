@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns:file="http://www.mulesoft.org/schema/mule/file"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd 
+http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/file/current/mule-file.xsd 
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="cbdf9d35-33c7-4814-b551-075d119d763a" >
+		<http:listener-connection host="0.0.0.0" port="8081" />
+	</http:listener-config>
+	<file:config name="File_Config" doc:name="File Config" doc:id="43ce741d-1ed7-456d-a0da-44df94c90782" >
+		<file:connection workingDir="D:\VTL_2024\DataWeave\fetch-order\src\main\resources\invoice" />
+	</file:config>
+	<file:config name="CreditMemo_File_Config" doc:name="File Config" doc:id="3c9bad6e-e083-4653-b847-bb14518f06ff" >
+		<file:connection workingDir="D:\VTL_2024\DataWeave\fetch-order\src\main\resources\credit-memo" />
+	</file:config>
+	<file:config name="Refund_File_Config" doc:name="File Config" doc:id="cd9c39f3-4318-4c53-afca-95df2fc8d711" >
+		<file:connection workingDir="D:\VTL_2024\DataWeave\fetch-order\src\main\resources\refund" />
+	</file:config>
+	<flow name="invoiceFlow" doc:id="730f5d6f-c8e9-4903-be69-f3f8f872974d" >
+		<http:listener doc:name="Listener" doc:id="78f9eb98-8b62-4807-961a-13e4e978fdfe" config-ref="HTTP_Listener_config" path="/invoice"/>
+		<ee:transform doc:name="Transform Message" doc:id="cfdb4c66-3b4c-454a-81b6-7a9f7ad0a38d" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	internalId: uuid()	
+} ++ payload]]></ee:set-payload>
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="request" ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<file:write doc:name="Write" doc:id="913e8e7c-6e01-4182-b41f-b13ab63367b4" config-ref="File_Config" path='#[payload.internalId ++ ".json"]' mode="CREATE_NEW">
+			<file:content ><![CDATA[#[{request: vars.request,
+response: payload
+}]]]></file:content>
+		</file:write>
+	</flow>
+	<flow name="credit-memoFlow" doc:id="227a76ca-9376-4469-899c-4e56e948b225" >
+		<http:listener doc:name="Listener" doc:id="62261062-fd50-4f6d-a948-2811770ddb74" config-ref="HTTP_Listener_config" path="/credit-memo" />
+		<ee:transform doc:name="var.request and append internalId" doc:id="5f777f86-f906-464a-9ccb-7f2349a55cf0" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	internalId: uuid()	
+} ++ payload]]></ee:set-payload>
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="request" ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<file:write doc:name="Write json flie" doc:id="00da87ff-0fa4-46d2-a610-d9fef2b8ad4b" config-ref="CreditMemo_File_Config" path='#[payload.internalId ++ ".json"]' mode="CREATE_NEW" >
+			<file:content ><![CDATA[#[{request: vars.request,
+response: payload
+}]]]></file:content>
+		</file:write>
+	</flow>
+	<flow name="refundFlow" doc:id="f8f93425-ebfb-4134-9c3c-ad6998eef502" >
+		<http:listener doc:name="Listener" doc:id="6fc884dc-cb54-42d9-bafd-2615cac89530" config-ref="HTTP_Listener_config" path="/refund" />
+		<ee:transform doc:name="var.request and append internalId" doc:id="bd8200ad-4b3b-4e64-9fa9-1a666565e189" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	internalId: uuid()	
+} ++ payload]]></ee:set-payload>
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="request" ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<file:write doc:name="Write .json" doc:id="498c91cc-76e3-493e-abfd-5b72e5d77f56" config-ref="Refund_File_Config" path='#[payload.internalId ++ ".json"]' mode="CREATE_NEW" >
+			<file:content ><![CDATA[#[{request: vars.request,
+response: payload
+}]]]></file:content>
+		</file:write>
+	</flow>
+	
+</mule>
